@@ -78,14 +78,15 @@ void gestion_hijo_padre( int segnal){
     
     kill(pidHijoHijo, SIGUSR2);
     
+    int numeroRead = 0;
     close(fd1[1]);
-    read(fd1[0], nuevaCadena, MAX_BUF);
+    read(fd1[0], &numeroRead, sizeof(numeroRead));
     //cout << "Hijo lee el pipe escrito por el hijo hijo " << endl;
     
-    //cout << "Pero mira la suma << " << nuevaCadena << endl;
+    //cout << "Pero mira la suma << " << numeroRead << endl;
     
     close(fd2[0]);
-    write(fd2[1], nuevaCadena, sizeof(nuevaCadena));
+    write(fd2[1], &numeroRead, sizeof(numeroRead));
     //cout << "Hijo escribe en el pipe para el padre" << endl;
     
     kill(pidPadre, SIGUSR1);
@@ -103,12 +104,12 @@ void gestion_hijo_hijo( int segnal )
     //cout << KBLU << "VALOR DE LA CADENA EN EL HIJOHIJO "  << nuevaCadena << RST << endl;
     
     suma = calcularSumaTotal(nuevaCadena);
-    sumaString = to_string(suma);
+    //sumaString = to_string(suma);
     
-    //cout << KBLU << "VALOR SUMA "  << sumaString << RST << endl;
+    //cout << KBLU << "VALOR SUMA "  << sumaString.size() << RST << endl;
     
     close(fd1[0]);
-    write(fd1[1], &sumaString, sizeof(sumaString));
+    write(fd1[1], &suma, sizeof(suma));
     
 }
 
@@ -142,12 +143,15 @@ void cuerpoPadre(){
         kill(pidHijo, SIGUSR1);
         pause();
         
-        close(fd2[1]);
-        read(fd2[0], nuevaCadena, MAX_BUF);
         
-        //cout << "Valor nueva cadena =" << nuevaCadena << endl;
-        sumaTotalPaquetes =  (atoi(nuevaCadena));
-        //TODO hacer bien la muestra del valor por que no funciona!
+        int numeroRead = 0;
+        close(fd2[1]);
+        read(fd2[0], &numeroRead, sizeof(numeroRead));
+        
+
+        //cout << "Valor nueva cadena =" << numeroRead << endl;
+        
+        sumaTotalPaquetes += numeroRead;
         cout << KBLU << "Suma total de los paquetes: " << sumaTotalPaquetes << RST << endl;
         sleep(3);
         
@@ -191,19 +195,15 @@ int main(){
                 case 0:
    
                     signal(SIGUSR2, gestion_hijo_hijo);
-                    cout << "Hijo hijo" << endl;
-                    while(1){
-                        //pause();
-                    };
+                    //cout << "Hijo hijo" << endl;
+                    while(1){};
                     break;
                     
                 default:
      
                     signal(SIGUSR1, gestion_hijo_padre);
-                    cout << "Hijo" << endl;
-                    while(1){
-                         //pause();
-                    };
+                    //cout << "Hijo" << endl;
+                    while(1){};
                     
                     break;
             }
@@ -211,7 +211,7 @@ int main(){
         default:
    
             signal(SIGUSR1, gestion_padre);
-            cout << "Padre" << endl;
+            //cout << "Padre" << endl;
             while(1){
                 cuerpoPadre();
             };
