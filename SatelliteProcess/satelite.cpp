@@ -5,7 +5,7 @@
 //  Created by Alejandro Nieto Alarcon on 08/11/2019.
 //
 
-#include "satelite.hpp"
+
 
 #include <iostream>
 #include <string>
@@ -48,7 +48,7 @@ int calcularSumaTotal(string cadenaTotalDeNumeros){
     //cout << "calcularSuma" << endl;
     string cadena = cadenaTotalDeNumeros;
     
-    int sumaTotal = 0;
+    long long int sumaTotal = 0;
     string numero;
 
     for(int i = 0; i < cadena.size(); i++){
@@ -144,7 +144,7 @@ void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &t
     cout << KGRN << totalPaquetes << cadenaRepresentativa << RST;
     
     //TODO cambiar intro por un espacio
-    int numero = 0;
+    long long int numero = 0;
     cin >> numero;
     
     if(numero == -1){
