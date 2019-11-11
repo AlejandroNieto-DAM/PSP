@@ -1,11 +1,3 @@
-//
-//  satelite.cpp
-//  
-//
-//  Created by Alejandro Nieto Alarcon on 08/11/2019.
-//
-
-
 
 #include <iostream>
 #include <string>
@@ -13,18 +5,10 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-//Libreria curses
-#include <curses.h>
-#include <stdio.h>
-
 #define RST  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
 #define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
 
 #define MAX_BUF 1024
 
@@ -34,7 +18,6 @@ using namespace std;
 int fd1[2], fd2[2];
 pid_t pidHijo, pidPadre, pidHijoHijo;
 char nuevaCadena[MAX_BUF] = "";
-
 
 
 /**
