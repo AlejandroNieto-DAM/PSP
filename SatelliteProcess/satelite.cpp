@@ -13,6 +13,10 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+//Libreria curses
+#include <curses.h>
+#include <stdio.h>
+
 #define RST  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
@@ -43,15 +47,17 @@ char nuevaCadena[MAX_BUF] = "";
 int calcularSumaTotal(string cadenaTotalDeNumeros){
     //cout << "calcularSuma" << endl;
     string cadena = cadenaTotalDeNumeros;
+    
     int sumaTotal = 0;
     string numero;
 
-    for(int i = 1; i < cadena.size(); i++){
+    for(int i = 0; i < cadena.size(); i++){
         if(cadena[i] == ' '){
             sumaTotal += atoi(numero.c_str());
             numero = "";
         } else {
             numero += cadena[i];
+           
         }
     }
     return sumaTotal;
@@ -69,7 +75,7 @@ int calcularSumaTotal(string cadenaTotalDeNumeros){
 void gestion_hijo_padre( int segnal){
     //printf("Hijo recibe seÒal del padre..%d\n", segnal);
     close(fd1[1]);
-    read(fd1[0], nuevaCadena, MAX_BUF);
+    read(fd1[0], nuevaCadena, sizeof(nuevaCadena));
 
     close(fd2[0]);
     write(fd2[1], nuevaCadena, sizeof(nuevaCadena));
@@ -77,6 +83,7 @@ void gestion_hijo_padre( int segnal){
     kill(pidHijoHijo, SIGUSR2);
     
     int numeroRead = 0;
+    
     close(fd1[1]);
     read(fd1[0], &numeroRead, sizeof(numeroRead));
     
@@ -99,7 +106,7 @@ void gestion_hijo_hijo( int segnal ){
     //printf("Hijo_hijo recibe seÒal..%d\n", segnal);
     close(fd2[1]);
     read(fd2[0], nuevaCadena, MAX_BUF);
-    
+   
     int suma = calcularSumaTotal(nuevaCadena);
     
     close(fd1[0]);
@@ -128,7 +135,7 @@ void gestion_padre( int segnal ){
  * @return
  * @post Dependiendo del paquete mandará una señal al hijo y este le devolverá la suma de los numeros del paquete introducido hasta el -1.
  */
-void cuerpoPadre(string &cadenaRepresentativa, string &cadenaNumero, int &sumaTotalPaquetes, string &totalPaquetes){
+void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &totalPaquetes){
     //cout << "Entro en el padre!! " << endl;
     
     system("clear");
@@ -139,12 +146,17 @@ void cuerpoPadre(string &cadenaRepresentativa, string &cadenaNumero, int &sumaTo
     //TODO cambiar intro por un espacio
     int numero = 0;
     cin >> numero;
-
+    
     if(numero == -1){
         
         totalPaquetes += cadenaRepresentativa + "-1 ";
         close(fd1[0]);
-        write(fd1[1], &cadenaRepresentativa, sizeof(cadenaRepresentativa));
+                
+        for(int i = 0; i < cadenaRepresentativa.size(); i++){
+            nuevaCadena[i] = cadenaRepresentativa[i];
+        }
+        
+        write(fd1[1], nuevaCadena, sizeof(nuevaCadena));
         kill(pidHijo, SIGUSR1);
         pause();
         
@@ -157,7 +169,7 @@ void cuerpoPadre(string &cadenaRepresentativa, string &cadenaNumero, int &sumaTo
         sleep(3);
         
         cadenaRepresentativa = "";
-     
+        
     } else if(numero < -1){
         
         cout << KRED << "Paquete erroneo --> " << cadenaRepresentativa << numero << RST << endl;
