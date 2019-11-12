@@ -136,8 +136,8 @@ void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &t
     
     //TODO cambiar intro por un espacio
     
-    //long long int numero = 0;
-    //cin >> numero;
+    long long int numero = 0;
+    cin >> numero;
     
     
     if(numero == -1){
