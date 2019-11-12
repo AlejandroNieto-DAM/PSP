@@ -1,16 +1,18 @@
-
 #include <iostream>
 #include <string>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <curses.h>
 
 #define RST  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
 #define KBLU  "\x1B[34m"
 
+
 #define MAX_BUF 1024
+
 
 using namespace std;
 
@@ -73,7 +75,8 @@ void gestion_hijo_padre( int segnal){
     close(fd2[0]);
     write(fd2[1], &numeroRead, sizeof(numeroRead));
     
-    kill(pidPadre, SIGUSR1);
+    kill(pidPadre, SIGUSR2);
+    
 }
 
 
@@ -94,6 +97,7 @@ void gestion_hijo_hijo( int segnal ){
     
     close(fd1[0]);
     write(fd1[1], &suma, sizeof(suma));
+    
 }
 
 
@@ -118,50 +122,83 @@ void gestion_padre( int segnal ){
  * @return
  * @post Dependiendo del paquete mandará una señal al hijo y este le devolverá la suma de los numeros del paquete introducido hasta el -1.
  */
-void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &totalPaquetes){
+void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &totalPaquetes, string &numero){
     //cout << "Entro en el padre!! " << endl;
     
-    system("clear");
-    system("clear");
+    initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
+ 
+    char ch = getch();
+    cout << ch;
     
-    cout << KGRN << totalPaquetes << cadenaRepresentativa << RST;
+    if(ch == ' '){
     
-    //TODO cambiar intro por un espacio
-    long long int numero = 0;
-    cin >> numero;
-    
-    if(numero == -1){
         
-        totalPaquetes += cadenaRepresentativa + "-1 ";
-        close(fd1[0]);
-                
-        for(int i = 0; i < cadenaRepresentativa.size(); i++){
-            nuevaCadena[i] = cadenaRepresentativa[i];
+        int x = atoi(numero.c_str());
+        
+        if(x == -1){
+            
+            totalPaquetes += cadenaRepresentativa + "-1 ";
+            close(fd1[0]);
+            
+            char nuevaCadena[MAX_BUF] = "";
+            
+            for(int i = 0; i < cadenaRepresentativa.size(); i++){
+                nuevaCadena[i] = cadenaRepresentativa[i];
+            }
+            
+            write(fd1[1], nuevaCadena, sizeof(nuevaCadena));
+            kill(pidHijo, SIGUSR1);
+            pause();
+            
+            int numeroRead = 0;
+            close(fd2[1]);
+            read(fd2[0], &numeroRead, sizeof(numeroRead));
+            
+            sumaTotalPaquetes += numeroRead;
+            
+            cout << KBLU << "Suma total de los paquetes: " << sumaTotalPaquetes << RST << endl;
+            sleep(3);
+            
+            system("clear");
+            system("clear");
+            cout << KGRN << totalPaquetes << RST << endl;
+            
+            cadenaRepresentativa = "";
+            
+        } else if(x < -1){
+            
+            cout << KRED << "Paquete erroneo --> " << cadenaRepresentativa << numero << RST << endl;
+            sleep(3);
+            
+            system("clear");
+            system("clear");
+            cout << KGRN << totalPaquetes << RST << endl;
+            
+            cadenaRepresentativa = "";
+            
+        } else {
+            cadenaRepresentativa += to_string(x) + " ";
+            
+            system("clear");
+            system("clear");
+            cout << KGRN << totalPaquetes << cadenaRepresentativa << RST << endl;
         }
         
-        write(fd1[1], nuevaCadena, sizeof(nuevaCadena));
-        kill(pidHijo, SIGUSR1);
-        pause();
-        
-        int numeroRead = 0;
-        close(fd2[1]);
-        read(fd2[0], &numeroRead, sizeof(numeroRead));
-        
-        sumaTotalPaquetes += numeroRead;
-        cout << KBLU << "Suma total de los paquetes: " << sumaTotalPaquetes << RST << endl;
-        sleep(3);
-        
-        cadenaRepresentativa = "";
-        
-    } else if(numero < -1){
-        
-        cout << KRED << "Paquete erroneo --> " << cadenaRepresentativa << numero << RST << endl;
-        sleep(3);
-        cadenaRepresentativa = "";
+        numero = "";
         
     } else {
-        cadenaRepresentativa += to_string(numero) + " ";
+        if(ch != '-'){
+            int x = (int)ch - 48;
+            numero += to_string(x);
+        } else {
+            numero += '-';
+        }
+        
     }
+    
 }
 
 int main(){
@@ -169,12 +206,15 @@ int main(){
     string cadenaRepresentativa = "";
     int sumaTotalPaquetes = 0;
     string totalPaquetes = "";
+    string numero = "";
     
     pipe(fd1);
     pipe(fd2);
 
     pidPadre = getpid();
     pidHijo = fork();
+    
+
     
     switch(pidHijo){
         case -1:
@@ -184,8 +224,12 @@ int main(){
             
         case 0:
             
+            signal(SIGUSR1, gestion_hijo_padre);
+            //signal(SIGUSR2, gestion_hijo_nieto);
+            
             pidHijoHijo = fork();
             
+
             switch (pidHijoHijo) {
                 case -1:
                     
@@ -193,25 +237,22 @@ int main(){
                     exit(1);
 
                 case 0:
-   
                     signal(SIGUSR2, gestion_hijo_hijo);
                     //cout << "Hijo hijo" << endl;
                     while(1){};
                     break;
                     
                 default:
-     
-                    signal(SIGUSR1, gestion_hijo_padre);
+                    
                     //cout << "Hijo" << endl;
                     while(1){};
                     break;
             }
             
         default:
-   
-            signal(SIGUSR1, gestion_padre);
+            signal(SIGUSR2, gestion_padre);
             //cout << "Padre" << endl;
-            while(1){cuerpoPadre(cadenaRepresentativa, sumaTotalPaquetes, totalPaquetes);};
+            while(1){cuerpoPadre(cadenaRepresentativa, sumaTotalPaquetes, totalPaquetes, numero);};
             break;
     }
 }
