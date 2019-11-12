@@ -102,7 +102,7 @@ void gestion_hijo_hijo( int segnal ){
 
 
 /**
- * @brief
+ * @brief Indica si el proceso padre ha recibido la señal.
  * @param int segnal que es la señal recibida del padre.
  * @pre El proceso padre debe recibir una señal del hijo.
  * @return
@@ -114,7 +114,16 @@ void gestion_padre( int segnal ){
 
 
 /**
- * @brief Es el cuerpo del proceso padre. Se introduce un numero y dependiendo de una condicion hará una cosa u otra hasta que se introduzca un -1 que hará que el proceso padre llame al hijo.
+ * @brief Es el cuerpo del proceso padre. Introduce caracteres en un string para formar un numeros
+    * hasta que le das a un espacio y convertimos ese string a int con el cual trabajaremos
+    * dependiendo de cual sea el numero. En el primer caso si es -1 mandará todos los numeros
+    * introducidos en la subcadena cadenaRepresentativa al hijo, sumará esa subcadena a la cadena
+    * totalPaquetes que mostrará todos los paquetes bien introducidos y esperará a que le devuelvan el
+    * valor de la suma de los valores de la subcadena, mostrará el resultado y hará un clear de la
+    * pantalla para mostrar todos los paquetes bien intrucidos. Si el numero introducido es menor que
+    * -1 la subcadena cadenaRepresentativa y ese paquete estarán mal introducidos y los mostrará en
+    * rojo. El último caso si no es -1 ni < -1 será un numero normal que se añadirá a la subcadena
+    * cadenaRepresentativa y lo separará con un espacio del resto de números introducidos.
  * @param string cadenaRepresentativa --> numeros introducidos hasta el -1.
  * @param string totalPaquetes --> valor de todos los paquetes introducidos.
  * @param int sumaTotalPaquetes --> es la suma de todos los numeros de todos los paquetes introducidos.
@@ -189,6 +198,12 @@ void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &t
         
         numero = "";
         
+    } else if (ch == '\n'){
+        
+        kill(pidHijo, SIGTERM);
+        kill(pidHijoHijo, SIGTERM);
+        exit(0);
+        
     } else {
         if(ch != '-'){
             int x = (int)ch - 48;
@@ -196,7 +211,6 @@ void cuerpoPadre(string &cadenaRepresentativa, int &sumaTotalPaquetes, string &t
         } else {
             numero += '-';
         }
-        
     }
     
 }
