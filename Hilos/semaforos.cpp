@@ -9,7 +9,7 @@
 
 using namespace std ;
 
-sem_t mutex ; // semaforo en memoria compartida
+sem_t antonio ; // semaforo en memoria compartida
 
 void* proc( void* p ){
 
@@ -33,14 +33,14 @@ void* proc2( void* p ){
 	string *message;
 	message = (string *) p;
 
-	sem_wait( &mutex );
+	sem_wait( &antonio );
 	for(int i = 0; i < 10; i++){
 		cout << *message ;
 		cout.flush();
 		int num_aleatorio = (rand()%(11-1))/5;
 		sleep(num_aleatorio); //dormimos la hebra para que se produzca cambio de contexto ligero entre hebras
 	}
-	sem_post( &mutex );
+	sem_post( &antonio );
 
 	return NULL ;
 }
@@ -93,7 +93,7 @@ int main(){
 	cout << endl << endl << endl << endl;
 	cout << "######CON SEMAFOROS######" << endl;
 
-	sem_init( &mutex, 0, 1 );	
+	sem_init( &antonio, 0, 1 );
 
 	for( unsigned i = 0 ; i < num_hebras ; i++ ){
 		pthread_create( &(id_hebraA2[i]), NULL, proc2, (void *)&mensajesA[i] );
@@ -108,7 +108,7 @@ int main(){
 		pthread_join( id_hebraC2[i], NULL );
 	}
 
-	sem_destroy( &mutex );
+	sem_destroy( &antonio );
 	
 	cout << endl;
 }
